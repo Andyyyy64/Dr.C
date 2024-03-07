@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Iinclude -Wall -Wextra -pedantic
+CFLAGS=-Iinclude -Wall -Wextra -pedantic # for more warnings and checks
+LDFLAGS= -lglut -lGL -lGLU -lm # for openGL
 OBJ_DIR=obj
 BIN_DIR=bin
 SOURECES=$(wildcard *.c)
