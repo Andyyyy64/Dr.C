@@ -1,6 +1,9 @@
+RAYLIB_PATH = ../../../raylib/src
+PLATFORM = PLATFORM_DESKTOP
+
 CC=gcc
 CFLAGS=-Iinclude -Wall -Wextra -pedantic # for more warnings and checks
-LDFLAGS= -lglut -lGL -lGLU -lm # for openGL
+LDFLAGS=-lraylib -lm
 OBJ_DIR=obj
 BIN_DIR=bin
 SOURECES=$(wildcard *.c)
@@ -11,7 +14,7 @@ all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	mkdir -p $(BIN_DIR)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(OBJ_DIR)
