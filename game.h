@@ -8,13 +8,16 @@
 #ifndef GAME_H
 #define GAME_H
 
+#define GAME_FPS 60
+
 #define SQUARE_SIZE 20
 #define ROWS 12
 #define COLS 20
 #define LATERAL_MOVE_SPEED 10
 #define TURN_SPEED 12
 #define FAST_FALLING_AWAIT_SPEED 30
-#define VIRUS_NUM 3
+#define FADING_TIME 10
+#define VIRUS_NUM 30
 
 // globals
 static int window_width = 800;
@@ -51,7 +54,7 @@ static int lines = 0;
 static int faling_down_counter = 0;
 static int lateral_move_counter = 0;
 static int turn_counter = 0;
-static int fast_falling__counter = 0;
+static int fast_falling_counter = 0;
 
 static int fade_line_counter = 0;
 
@@ -64,14 +67,14 @@ void draw_board(); // draw the board using raylib
 void update_and_draw(); // update and draw the game(just a wrapper for update_board and draw_board)
 
 // functions related to the bit
-void create_bit(); // create a new bit
+bool create_bit(); // create a new bit
 void get_random_bit(); // get a random bit
 void bit_fall(bool *bit_active, bool *bit_detect); // make the bit fall or stop it
-void bit_lateral_move(); // move the bit to the left or right
-void bit_turn(); // turn the bit
+bool bit_lateral_move(); // move the bit to the left or right
+bool bit_turn(); // turn the bit
 void check_detect(bool *bit_detect); // check if the bit is detected
 void check_complete_line(bool *bit_to_delete); // check if the line is complete
-void delete_line(); // delete the line when it is full
+int delete_line(); // delete the line when it is full
 
 // functions related to the virus
 void create_virus(); // create a new virus

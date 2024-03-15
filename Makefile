@@ -2,7 +2,7 @@ RAYLIB_PATH = ../../../raylib/src
 PLATFORM = PLATFORM_DESKTOP
 
 CC=gcc
-CFLAGS=-Iinclude -Wall -Wextra -pedantic # for more warnings and checks
+CFLAGS=-Wall -Wextra -pedantic # for more warnings and checks
 LDFLAGS=-lraylib -lm
 OBJ_DIR=obj
 BIN_DIR=bin

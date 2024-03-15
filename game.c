@@ -1,0 +1,225 @@
+#include "game.h"
+
+void init_board() {
+    fading_color = GRAY;
+    for(int i = 0; i < ROWS; i++) {
+        // set the blocked cells
+        for(int j = 0; j < COLS; j++) {
+            if((j == ROWS - 1) || (i == 0) || (i == COLS - 1)) {
+                board[i][j] = BLOCKED;
+            } else {
+                board[i][j] = EMPTY;
+            }
+        }
+
+        for(int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                next_two_bit[i][j] = EMPTY;
+            }
+        }
+    }
+}
+
+void update_board() {
+    if(!game_over) {
+        if(IsKeyPressed('P')) { // if the user press the P
+            pausing = !pausing; // change the pausing state
+        }
+        if(!pausing) {
+            if(!bit_to_delete) {
+                if(!bit_active) {
+                    // if the bit is not active, create a new bit
+                    bit_active = create_bit();
+
+                    fast_falling_counter = 0;
+                } else {
+                    faling_down_counter++;
+                    lateral_move_counter++;
+                    turn_counter++;
+                    fast_falling_counter++;
+
+                    if(IsKeyPressed('A') || IsKeyReleased('D')) {
+                        lateral_move_counter = LATERAL_MOVE_SPEED;
+                    }
+                    if(IsKeyPressed('W')) {
+                        turn_counter = TURN_SPEED;
+                    }
+                    if(IsKeyPressed('S') && (fast_falling_counter > FAST_FALLING_AWAIT_SPEED)) {
+                        faling_down_counter = falling_speed;
+                    }
+                    if(faling_down_counter > falling_speed) {
+                        check_detect(&bit_detect);
+
+                        bit_fall(&bit_active, &bit_detect);
+
+                        check_complete_line(&bit_to_delete);
+
+                        faling_down_counter = 0;
+                    }
+                    if(lateral_move_counter > LATERAL_MOVE_SPEED) {
+                        if(!bit_lateral_move()) {
+                            lateral_move_counter = 0;
+                        }
+                    }
+                    if(turn_counter > TURN_SPEED) {
+                        if(!bit_turn()) {
+                            turn_counter = 0;
+                        }
+                    }
+                }
+                // game over condition
+                for(int i = 0; i < 2; i++) {
+                    for(int j = 0; j < ROWS; j++) {
+                        if(board[i][j] == FULL) {
+                            game_over = true;
+                        }
+                    }
+                }
+            } else {
+                fade_line_counter++;
+                if(fade_line_counter%8 < 4) {
+                    fading_color = MAROON;
+                } else {
+                    fading_color = DARKGRAY;
+                }
+                if(fade_line_counter > FADING_TIME) {
+                    int deleted_lines = 0;
+                    deleted_lines = delete_line();
+                    fade_line_counter = 0;
+                    bit_to_delete = false;
+
+                    lines += deleted_lines;
+                }
+            }
+        }
+    } else {
+        if(IsKeyPressed(KEY_ENTER)) {
+            init_board();
+            game_over = false;
+        }
+    }
+}
+
+void draw_board() {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    if(!game_over) {
+        Vector2 pos;
+        pos.x = window_width/2 - (ROWS*SQUARE_SIZE/2) - 50;
+        pos.y = window_height/2 - ((COLS - 1)*SQUARE_SIZE/2) + SQUARE_SIZE*2; // idk wtf is this
+        pos.y -= 50;
+
+        int controller = pos.x;
+        for (int j = 0; j < COLS; j++)
+            {
+                for (int i = 0; i < COLS; i++)
+                {
+                    // Draw each square of the grid
+                    if (board[i][j] == EMPTY)
+                    {
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    }
+                    else if (board[i][j] == FULL)
+                    {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                        pos.x += SQUARE_SIZE;
+                    }
+                    else if (board[i][j] == MOVING)
+                    {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, DARKGRAY);
+                        pos.x += SQUARE_SIZE;
+                    }
+                    else if (board[i][j] == BLOCKED)
+                    {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
+                        pos.x += SQUARE_SIZE;
+                    }
+                    else if (board[i][j] == FADING)
+                    {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, fading_color);
+                        pos.x += SQUARE_SIZE;
+                    }
+                }
+
+                pos.x = controller;
+                pos.y += SQUARE_SIZE;
+            }
+
+            // Draw incoming piece
+            pos.x = 500;
+            pos.y = 45;
+
+            int controler = pos.x;
+
+            for (int j = 0; j < 4; j++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (next_two_bit[i][j] == EMPTY)
+                    {
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    }
+                    else if (next_two_bit[i][j] == MOVING)
+                    {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                        pos.x += SQUARE_SIZE;
+                    }
+                }
+
+                pos.x = controler;
+                pos.y += SQUARE_SIZE;
+            }
+
+            DrawText("incoming", pos.x, pos.y - 100, 10, GRAY);
+            DrawText(TextFormat("LINES:      %04i", lines), pos.x, pos.y + 20, 10, GRAY);
+
+            if (pausing) DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
+        } else DrawText("enter", GetScreenWidth()/2 - MeasureText("enter", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+
+    EndDrawing();
+}
+
+void update_and_draw() {
+    update_board();
+    draw_board();
+}
+
+bool create_bit() {
+
+}
+
+void get_random_bit() {
+
+}
+
+void bit_fall(bool *bit_active, bool *bit_detect) {
+
+}
+
+bool bit_lateral_move() {
+
+}
+
+bool bit_turn() {
+
+}
+
+void check_detect(bool *bit_detect) {
+
+}
+
+void check_complete_line(bool *bit_to_delete) {
+
+}
+
+int delete_line() {
+
+}

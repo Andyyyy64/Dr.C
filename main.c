@@ -1,15 +1,11 @@
-#include "raylib.h"
-
-
+#include "game.h"
 
 int main() {
-    InitWindow(800, 450, "Only two digit!!!");
-
+    InitWindow(window_width, window_height, "Only two digit!!!");
+    init_board();
+    SetTargetFPS(GAME_FPS);
     while(!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawText("YOYOYOYOYOYOYOY", 190, 200, 20, LIGHTGRAY);
-        EndDrawing();
+     update_and_draw();
     }
 
     CloseWindow();
