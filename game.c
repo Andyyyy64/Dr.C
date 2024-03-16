@@ -2,10 +2,10 @@
 
 void init_board() {
     fading_color = GRAY;
-    for(int i = 0; i < ROWS; i++) {
+    for(int i = 0; i < HORIZONTAL; i++) {
         // set the blocked cells
-        for(int j = 0; j < COLS; j++) {
-            if((j == ROWS - 1) || (i == 0) || (i == COLS - 1)) {
+        for(int j = 0; j < VERTICAL; j++) {
+            if((j == VERTICAL - 1) || (i == 0) || (i == HORIZONTAL - 1)) {
                 board[i][j] = BLOCKED;
             } else {
                 board[i][j] = EMPTY;
@@ -69,7 +69,7 @@ void update_board() {
                 }
                 // game over condition
                 for(int i = 0; i < 2; i++) {
-                    for(int j = 0; j < ROWS; j++) {
+                    for(int j = 0; j < HORIZONTAL; j++) {
                         if(board[i][j] == FULL) {
                             game_over = true;
                         }
@@ -105,41 +105,33 @@ void draw_board() {
     ClearBackground(RAYWHITE);
     if(!game_over) {
         Vector2 pos;
-        pos.x = window_width/2 - (ROWS*SQUARE_SIZE/2) - 50;
-        pos.y = window_height/2 - ((COLS - 1)*SQUARE_SIZE/2) + SQUARE_SIZE*2; // idk wtf is this
+        pos.x = window_width/2 - (HORIZONTAL*SQUARE_SIZE/2) - 50;
+        pos.y = window_height/2 - ((VERTICAL - 1)*SQUARE_SIZE/2) + SQUARE_SIZE*2; // idk wtf is this
         pos.y -= 50;
 
         int controller = pos.x;
-        for (int j = 0; j < COLS; j++)
-            {
-                for (int i = 0; i < COLS; i++)
-                {
+        for (int j = 0; j < VERTICAL; j++) {
+                for (int i = 0; i < HORIZONTAL; i++) {
                     // Draw each square of the grid
-                    if (board[i][j] == EMPTY)
-                    {
+                    if (board[i][j] == EMPTY) {
                         DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
                         DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         pos.x += SQUARE_SIZE;
-                    }
-                    else if (board[i][j] == FULL)
-                    {
+                    } else if (board[i][j] == FULL) {
                         DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
                         pos.x += SQUARE_SIZE;
-                    }
-                    else if (board[i][j] == MOVING)
-                    {
-                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, DARKGRAY);
+                    } else if (board[i][j] == ZERO) {
+                        // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, DARKGRAY);
+                        DrawText("0", pos.x, pos.y, 20, DARKGRAY);
                         pos.x += SQUARE_SIZE;
-                    }
-                    else if (board[i][j] == BLOCKED)
-                    {
+                    } else if(board[i][j] == ONE) {
+                        DrawText("1", pos.x, pos.y, 20, DARKGRAY);
+                    } else if (board[i][j] == BLOCKED) {
                         DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
                         pos.x += SQUARE_SIZE;
-                    }
-                    else if (board[i][j] == FADING)
-                    {
+                    } else if (board[i][j] == FADING) {
                         DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, fading_color);
                         pos.x += SQUARE_SIZE;
                     }
@@ -155,35 +147,33 @@ void draw_board() {
 
             int controler = pos.x;
 
-            for (int j = 0; j < 4; j++)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    if (next_two_bit[i][j] == EMPTY)
-                    {
+            for (int j = 0; j < 2; j++) {
+                for (int i = 0; i < 2; i++) {
+                    if (next_two_bit[i][j] == EMPTY) {
                         DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
                         DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         pos.x += SQUARE_SIZE;
-                    }
-                    else if (next_two_bit[i][j] == MOVING)
-                    {
-                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                    } else if (next_two_bit[i][j] == ZERO) {
+                        // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                        DrawText("0", pos.x, pos.y, 20, GRAY);
+                        pos.x += SQUARE_SIZE;
+                    } else if(next_two_bit[i][j] == ONE) {
+                        DrawText("1", pos.x, pos.y, 20, GRAY);
                         pos.x += SQUARE_SIZE;
                     }
                 }
-
                 pos.x = controler;
                 pos.y += SQUARE_SIZE;
             }
 
             DrawText("incoming", pos.x, pos.y - 100, 10, GRAY);
-            DrawText(TextFormat("LINES:      %04i", lines), pos.x, pos.y + 20, 10, GRAY);
 
-            if (pausing) DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
-        } else DrawText("enter", GetScreenWidth()/2 - MeasureText("enter", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
-
+        if (pausing) DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
+    } else {
+        DrawText("enter", GetScreenWidth()/2 - MeasureText("enter", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+    }
     EndDrawing();
 }
 
@@ -193,33 +183,89 @@ void update_and_draw() {
 }
 
 bool create_bit() {
+    bitX = (int)((HORIZONTAL - 4)/2);
+    bitY = 0;
 
+    if(begin) {
+        get_random_bit();
+        begin = false;
+    }
+
+    // assign the bit
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
+            two_bit[i][j] = next_two_bit[i][j];
+        }
+    }
+
+    // assign the bit to board
+    get_random_bit();
+
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
+            if(board[i - (int)bitX][j] == ZERO) board[i][j] = ZERO;
+            else if(board[i - (int)bitX][j] == ONE) board[i][j] = ONE;
+        }
+    }
+    return true;
 }
 
 void get_random_bit() {
-
+    int random = GetRandomValue(0, 3);
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
+            two_bit[i][j] = EMPTY;
+        }
+    }
+    switch(random) {
+        case 0: { next_two_bit[0][0] = ZERO; next_two_bit[0][1] = ZERO; } // 00
+        case 1: { next_two_bit[0][0] = ZERO; next_two_bit[0][1] = ONE; } // 01
+        case 2: { next_two_bit[0][0] = ONE; next_two_bit[0][1] = ZERO; } // 10
+        case 3: { next_two_bit[0][0] = ONE; next_two_bit[0][1] = ONE; } // 11
+    }
 }
 
 void bit_fall(bool *bit_active, bool *bit_detect) {
-
+    if(*bit_detect) {
+        for(int i = VERTICAL - 2; i >= 0; i--) {
+            for(int j = 1; j < HORIZONTAL - 1; j++) {
+                board[i][j] = FULL; // mark the board as full where the bit is detected
+                *bit_detect = false;
+                *bit_active = false;
+            }
+        }
+    } else { // move down the bit
+        for(int i = VERTICAL - 2; i >= 0; i--) {
+            for(int j = 1; j < HORIZONTAL - 1; j++) {
+                if(board[i][j] == ZERO) {
+                    board[i][j + 1] = ZERO;
+                    board[i][j] = EMPTY;
+                } else if(board[i][j] == ONE) {
+                    board[i][j + 1] = ONE;
+                    board[i][j] = EMPTY;
+                }
+            }
+        }
+        bitY++;
+    }
 }
 
 bool bit_lateral_move() {
-
+    
 }
 
 bool bit_turn() {
-
+    
 }
 
 void check_detect(bool *bit_detect) {
-
+    
 }
 
 void check_complete_line(bool *bit_to_delete) {
-
+    
 }
 
 int delete_line() {
-
+    
 }

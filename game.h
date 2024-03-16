@@ -11,8 +11,8 @@
 #define GAME_FPS 60
 
 #define SQUARE_SIZE 20
-#define ROWS 12
-#define COLS 20
+#define HORIZONTAL 12
+#define VERTICAL 20
 #define LATERAL_MOVE_SPEED 10
 #define TURN_SPEED 12
 #define FAST_FALLING_AWAIT_SPEED 30
@@ -27,10 +27,10 @@ static bool game_over = false;
 static bool pausing = false;
 
 // type def for cell type
-typedef enum { EMPTY, MOVING, FULL, BLOCKED, VIRUS, FADING } CellType;;
+typedef enum { EMPTY, ZERO, ONE, FULL, BLOCKED, VIRUS, FADING } CellType;;
 
 // borads
-static CellType board[ROWS][COLS];
+static CellType board[HORIZONTAL][VERTICAL];
 static CellType two_bit[2][2];
 static CellType next_two_bit[2][2];
 static CellType virus[2][2];
