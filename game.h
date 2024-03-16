@@ -27,7 +27,7 @@ static bool game_over = false;
 static bool pausing = false;
 
 // type def for cell type
-typedef enum { EMPTY, ZERO, ONE, FULL, BLOCKED, VIRUS, FADING } CellType;;
+typedef enum { EMPTY, ZERO, ONE, FULL, BLOCKED, VIRUS, FADING } CellType;
 
 // borads
 static CellType board[HORIZONTAL][VERTICAL];
@@ -42,8 +42,8 @@ static int bitY = 0;
 static Color fading_color;
 
 static bool begin = true;
-static bool bit_active = false;
-static bool bit_detect = false;
+static bool is_bit_active = false;
+static bool is_bit_collision = false;
 static bool bit_to_delete = false;
 static bool virus_to_delete = false;
 

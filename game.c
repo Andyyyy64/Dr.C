@@ -27,9 +27,9 @@ void update_board() {
         }
         if(!pausing) {
             if(!bit_to_delete) {
-                if(!bit_active) {
+                if(!is_bit_active) {
                     // if the bit is not active, create a new bit
-                    bit_active = create_bit();
+                    is_bit_active = create_bit();
 
                     fast_falling_counter = 0;
                 } else {
@@ -48,9 +48,9 @@ void update_board() {
                         faling_down_counter = falling_speed;
                     }
                     if(faling_down_counter > falling_speed) {
-                        check_detect(&bit_detect);
+                        check_detect(&is_bit_collision);
 
-                        bit_fall(&bit_active, &bit_detect);
+                        bit_fall(&is_bit_active, &is_bit_collision);
 
                         check_complete_line(&bit_to_delete);
 
@@ -218,20 +218,20 @@ void get_random_bit() {
         }
     }
     switch(random) {
-        case 0: { next_two_bit[0][0] = ZERO; next_two_bit[0][1] = ZERO; } // 00
-        case 1: { next_two_bit[0][0] = ZERO; next_two_bit[0][1] = ONE; } // 01
-        case 2: { next_two_bit[0][0] = ONE; next_two_bit[0][1] = ZERO; } // 10
-        case 3: { next_two_bit[0][0] = ONE; next_two_bit[0][1] = ONE; } // 11
+        case 0: { next_two_bit[0][0] = ZERO; next_two_bit[0][1] = ZERO; } break; // 00
+        case 1: { next_two_bit[0][0] = ZERO; next_two_bit[0][1] = ONE; } break;  // 01
+        case 2: { next_two_bit[0][0] = ONE; next_two_bit[0][1] = ZERO; } break;  // 10
+        case 3: { next_two_bit[0][0] = ONE; next_two_bit[0][1] = ONE; } break;   // 11
     }
 }
 
 void bit_fall(bool *bit_active, bool *bit_detect) {
-    if(*bit_detect) {
+    if(*is_bit_collision) {
         for(int i = VERTICAL - 2; i >= 0; i--) {
             for(int j = 1; j < HORIZONTAL - 1; j++) {
                 board[i][j] = FULL; // mark the board as full where the bit is detected
-                *bit_detect = false;
-                *bit_active = false;
+                *is_bit_collision = false;
+                *is_bit_active = false;
             }
         }
     } else { // move down the bit
