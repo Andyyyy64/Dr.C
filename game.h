@@ -69,10 +69,10 @@ void update_and_draw(); // update and draw the game(just a wrapper for update_bo
 // functions related to the bit
 bool create_bit(); // create a new bit
 void get_random_bit(); // get a random bit
-void bit_fall(bool *bit_active, bool *bit_detect); // make the bit fall or stop it
+void bit_fall(bool *is_bit_active, bool *is_bit_collision); // make the bit fall or stop it
 bool bit_lateral_move(); // move the bit to the left or right
 bool bit_turn(); // turn the bit
-void check_detect(bool *bit_detect); // check if the bit is detected
+void check_is_collision(bool *is_bit_collison); // check if the bit is detected
 void check_complete_line(bool *bit_to_delete); // check if the line is complete
 int delete_line(); // delete the line when it is full
 

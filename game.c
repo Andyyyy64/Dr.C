@@ -48,7 +48,7 @@ void update_board() {
                         faling_down_counter = falling_speed;
                     }
                     if(faling_down_counter > falling_speed) {
-                        check_detect(&is_bit_collision);
+                        check_is_collision(&is_bit_collision);
 
                         bit_fall(&is_bit_active, &is_bit_collision);
 
@@ -157,10 +157,10 @@ void draw_board() {
                         pos.x += SQUARE_SIZE;
                     } else if (next_two_bit[i][j] == ZERO) {
                         // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
-                        DrawText("0", pos.x, pos.y, 20, GRAY);
+                        DrawText("0", pos.x + 26, pos.y, 20, GRAY);
                         pos.x += SQUARE_SIZE;
                     } else if(next_two_bit[i][j] == ONE) {
-                        DrawText("1", pos.x, pos.y, 20, GRAY);
+                        DrawText("1", pos.x + 26, pos.y, 20, GRAY);
                         pos.x += SQUARE_SIZE;
                     }
                 }
@@ -168,7 +168,7 @@ void draw_board() {
                 pos.y += SQUARE_SIZE;
             }
 
-            DrawText("incoming", pos.x, pos.y - 100, 10, GRAY);
+            DrawText("incoming bit", pos.x, pos.y, 10, GRAY);
 
         if (pausing) DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
     } else {
@@ -201,10 +201,10 @@ bool create_bit() {
     // assign the bit to board
     get_random_bit();
 
-    for(int i = 0; i < 2; i++) {
+    for(int i = bitX; i < bitX + 2; i++) {
         for(int j = 0; j < 2; j++) {
-            if(board[i - (int)bitX][j] == ZERO) board[i][j] = ZERO;
-            else if(board[i - (int)bitX][j] == ONE) board[i][j] = ONE;
+            if(two_bit[i - (int)bitX][j] == ZERO) board[i][j] = ZERO;
+            else if(two_bit[i - (int)bitX][j] == ONE) board[i][j] = ONE;
         }
     }
     return true;
@@ -225,18 +225,20 @@ void get_random_bit() {
     }
 }
 
-void bit_fall(bool *bit_active, bool *bit_detect) {
+void bit_fall(bool *is_bit_active, bool *is_bit_collision) {
     if(*is_bit_collision) {
-        for(int i = VERTICAL - 2; i >= 0; i--) {
-            for(int j = 1; j < HORIZONTAL - 1; j++) {
-                board[i][j] = FULL; // mark the board as full where the bit is detected
-                *is_bit_collision = false;
-                *is_bit_active = false;
+        for(int j = VERTICAL - 2; j >= 0; j--) {
+            for(int i = 1; i < HORIZONTAL - 1; i++) {
+                if(board[i][j] == ZERO || board[i][j] == ONE) {
+                    board[i][j] = FULL;
+                    *is_bit_collision = false;
+                    *is_bit_active = false;
+                }
             }
         }
     } else { // move down the bit
-        for(int i = VERTICAL - 2; i >= 0; i--) {
-            for(int j = 1; j < HORIZONTAL - 1; j++) {
+        for(int j = VERTICAL - 2; j >= 0; j--) {
+            for(int i = 1; i < HORIZONTAL - 1; i++) {
                 if(board[i][j] == ZERO) {
                     board[i][j + 1] = ZERO;
                     board[i][j] = EMPTY;
@@ -258,9 +260,16 @@ bool bit_turn() {
     
 }
 
-void check_detect(bool *bit_detect) {
-    
+void check_is_collision(bool *is_bit_collision) {
+    for(int j = VERTICAL - 2; j >= 0; j--) {
+        for(int i = 1; i < HORIZONTAL - 1; i++) {
+            if((board[i][j] == ZERO || board[i][j] == ONE) && ((board[i][j + 1] == FULL) || (board[i][j + 1] == BLOCKED))) {
+                *is_bit_collision = true;
+            }
+        }
+    }
 }
+
 
 void check_complete_line(bool *bit_to_delete) {
     
