@@ -8,7 +8,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define GAME_FPS 60
+#define GAME_FPS 30
 
 #define SQUARE_SIZE 20
 #define HORIZONTAL 12
@@ -18,6 +18,7 @@
 #define FAST_FALLING_AWAIT_SPEED 30
 #define FADING_TIME 10
 #define VIRUS_NUM 30
+#define BIT_OFFSET 26
 
 // globals
 static int window_width = 800;
@@ -27,7 +28,7 @@ static bool game_over = false;
 static bool pausing = false;
 
 // type def for cell type
-typedef enum { EMPTY, ZERO, ONE, FULL, BLOCKED, VIRUS, FADING } CellType;
+typedef enum { EMPTY, ZERO, ONE, ZERO_FULL, ONE_FULL, BLOCKED, VIRUS, FADING } CellType;
 
 // borads
 static CellType board[HORIZONTAL][VERTICAL];

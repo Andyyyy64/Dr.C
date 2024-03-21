@@ -1,9 +1,10 @@
 #include "game.h"
+#include <raylib.h>
 
 void init_board() {
     fading_color = GRAY;
     for(int i = 0; i < HORIZONTAL; i++) {
-        // set the blocked cells
+        // set the blocked cells and empty cells
         for(int j = 0; j < VERTICAL; j++) {
             if((j == VERTICAL - 1) || (i == 0) || (i == HORIZONTAL - 1)) {
                 board[i][j] = BLOCKED;
@@ -12,6 +13,7 @@ void init_board() {
             }
         }
 
+        // set the next bit cells to empty
         for(int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
                 next_two_bit[i][j] = EMPTY;
@@ -22,6 +24,7 @@ void init_board() {
 
 void update_board() {
     if(!game_over) {
+        // printf("1frame\n");
         if(IsKeyPressed('P')) { // if the user press the P
             pausing = !pausing; // change the pausing state
         }
@@ -44,16 +47,21 @@ void update_board() {
                     if(IsKeyPressed('W')) {
                         turn_counter = TURN_SPEED;
                     }
-                    if(IsKeyPressed('S') && (fast_falling_counter > FAST_FALLING_AWAIT_SPEED)) {
+                    // fall down
+                    if(IsKeyDown('S') && (fast_falling_counter > FAST_FALLING_AWAIT_SPEED)) {
                         faling_down_counter = falling_speed;
                     }
-                    if(faling_down_counter > falling_speed) {
+                    if(faling_down_counter >= falling_speed) {
+                        // check if the bit is colliding with the board
                         check_is_collision(&is_bit_collision);
 
+                        // move the bit down
                         bit_fall(&is_bit_active, &is_bit_collision);
 
+                        // check if the bit complete a line
                         check_complete_line(&bit_to_delete);
 
+                        // reset the faling speed
                         faling_down_counter = 0;
                     }
                     if(lateral_move_counter > LATERAL_MOVE_SPEED) {
@@ -70,7 +78,7 @@ void update_board() {
                 // game over condition
                 for(int i = 0; i < 2; i++) {
                     for(int j = 0; j < HORIZONTAL; j++) {
-                        if(board[i][j] == FULL) {
+                        if(board[i][j] == ZERO_FULL || board[i][j] == ONE_FULL) {
                             game_over = true;
                         }
                     }
@@ -119,15 +127,22 @@ void draw_board() {
                         DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
                         pos.x += SQUARE_SIZE;
-                    } else if (board[i][j] == FULL) {
-                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                    } else if (board[i][j] == ZERO_FULL) {
+                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    } else if(board[i][j] == ONE_FULL) {
+                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
                         pos.x += SQUARE_SIZE;
                     } else if (board[i][j] == ZERO) {
-                        // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, DARKGRAY);
-                        DrawText("0", pos.x, pos.y, 20, DARKGRAY);
+                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
                         pos.x += SQUARE_SIZE;
                     } else if(board[i][j] == ONE) {
-                        DrawText("1", pos.x, pos.y, 20, DARKGRAY);
+                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
                     } else if (board[i][j] == BLOCKED) {
                         DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
                         pos.x += SQUARE_SIZE;
@@ -157,10 +172,10 @@ void draw_board() {
                         pos.x += SQUARE_SIZE;
                     } else if (next_two_bit[i][j] == ZERO) {
                         // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
-                        DrawText("0", pos.x + 26, pos.y, 20, GRAY);
+                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, GRAY);
                         pos.x += SQUARE_SIZE;
                     } else if(next_two_bit[i][j] == ONE) {
-                        DrawText("1", pos.x + 26, pos.y, 20, GRAY);
+                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, GRAY);
                         pos.x += SQUARE_SIZE;
                     }
                 }
@@ -170,7 +185,9 @@ void draw_board() {
 
             DrawText("incoming bit", pos.x, pos.y, 10, GRAY);
 
-        if (pausing) DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
+            if (pausing) {
+                DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
+            }
     } else {
         DrawText("enter", GetScreenWidth()/2 - MeasureText("enter", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
     }
@@ -203,7 +220,10 @@ bool create_bit() {
 
     for(int i = bitX; i < bitX + 2; i++) {
         for(int j = 0; j < 2; j++) {
-            if(two_bit[i - (int)bitX][j] == ZERO) board[i][j] = ZERO;
+            if(two_bit[i - (int)bitX][j] == ZERO) {
+                board[i][j] = ZERO;
+                printf("assign bit to board\n");
+            }
             else if(two_bit[i - (int)bitX][j] == ONE) board[i][j] = ONE;
         }
     }
@@ -214,7 +234,7 @@ void get_random_bit() {
     int random = GetRandomValue(0, 3);
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < 2; j++) {
-            two_bit[i][j] = EMPTY;
+            next_two_bit[i][j] = EMPTY;
         }
     }
     switch(random) {
@@ -227,16 +247,22 @@ void get_random_bit() {
 
 void bit_fall(bool *is_bit_active, bool *is_bit_collision) {
     if(*is_bit_collision) {
+        printf("bit collision\n");
         for(int j = VERTICAL - 2; j >= 0; j--) {
             for(int i = 1; i < HORIZONTAL - 1; i++) {
-                if(board[i][j] == ZERO || board[i][j] == ONE) {
-                    board[i][j] = FULL;
+                if(board[i][j] == ZERO) {
+                    board[i][j] = ZERO_FULL;
+                    *is_bit_collision = false;
+                    *is_bit_active = false;
+                } else if(board[i][j] == ONE) {
+                    board[i][j] = ONE_FULL;
                     *is_bit_collision = false;
                     *is_bit_active = false;
                 }
             }
         }
     } else { // move down the bit
+        printf("bit falling bit Y:%d\n", bitY);
         for(int j = VERTICAL - 2; j >= 0; j--) {
             for(int i = 1; i < HORIZONTAL - 1; i++) {
                 if(board[i][j] == ZERO) {
@@ -263,7 +289,7 @@ bool bit_turn() {
 void check_is_collision(bool *is_bit_collision) {
     for(int j = VERTICAL - 2; j >= 0; j--) {
         for(int i = 1; i < HORIZONTAL - 1; i++) {
-            if((board[i][j] == ZERO || board[i][j] == ONE) && ((board[i][j + 1] == FULL) || (board[i][j + 1] == BLOCKED))) {
+            if((board[i][j] == ZERO || board[i][j] == ONE) && ((board[i][j + 1] == ONE_FULL) || (board[i][j + 1] == ZERO_FULL) || (board[i][j + 1] == BLOCKED))) {
                 *is_bit_collision = true;
             }
         }
@@ -276,5 +302,5 @@ void check_complete_line(bool *bit_to_delete) {
 }
 
 int delete_line() {
-    
+
 }
