@@ -200,7 +200,7 @@ void update_and_draw() {
 }
 
 bool create_bit() {
-    bitX = (int)((HORIZONTAL - 4)/2);
+    bitX = (int)((HORIZONTAL - 3)/2);
     bitY = 0;
 
     if(begin) {
@@ -279,7 +279,58 @@ void bit_fall(bool *is_bit_active, bool *is_bit_collision) {
 }
 
 bool bit_lateral_move() {
-    
+    bool collison = false;
+
+    // check if the bit is colliding with the board
+    if(IsKeyDown('A') || IsKeyDown(KEY_LEFT)) {
+        for(int j = VERTICAL - 2; j >= 0; j--) {
+            for(int i = 1; i < HORIZONTAL - 1; i++)  {
+                if(board[i][j] == ZERO || board[i][j] == ONE) {
+                    if((i - 1 == 0) || (board[i - 1][j] == ZERO_FULL) || (board[i - 1][j] == ONE_FULL)) {
+                        printf("collison: %d\n", i);
+                        collison = true;
+                    }
+                }
+            }
+        }
+        // if there is no collison, move the bit to the left
+        if(!collison) {
+            for(int j = VERTICAL - 2; j >= 0; j--) {
+                for(int i = 1; i < HORIZONTAL - 1; i++) {
+                    if(board[i][j] == ZERO || board[i][j] == ONE) {
+                        board[i - 1][j] = board[i][j];
+                        board[i][j] = EMPTY;                
+                    }
+                }
+            }
+            bitX--;
+        }
+        // check if the bit is colliding with the board
+    } else if(IsKeyDown('D') || IsKeyDown(KEY_RIGHT)) {
+        for(int j = VERTICAL - 2; j >= 0; j--) {
+            for(int i = 1; i < HORIZONTAL - 1; i++)  {
+                if(board[i][j] == ZERO || board[i][j] == ONE) {
+                    if((i + 1 == HORIZONTAL - 2) || (board[i + 1][j] == ZERO_FULL) || (board[i + 1][j] == ONE_FULL) || (board[i + 1][j] == BLOCKED)) {
+                        printf("collison: %d\n", i + 1);
+                        collison = true;
+                    }
+                }
+            }
+        }
+        // if there is no collison, move the bit to the right
+        if(!collison) {
+            for(int j = VERTICAL - 2; j >= 0; j--) {
+                for(int i = HORIZONTAL - 1; i >= 1; i--) {
+                    if(board[i][j] == ZERO || board[i][j] == ONE) {
+                        board[i + 1][j] = board[i][j];
+                        board[i][j] = EMPTY;
+                    }
+                }
+            }
+            bitX++;
+        }
+    }
+    return collison;
 }
 
 bool bit_turn() {
