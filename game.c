@@ -1,5 +1,4 @@
 #include "game.h"
-#include <raylib.h>
 
 void init_board() {
     fading_color = GRAY;
@@ -8,6 +7,7 @@ void init_board() {
         for(int j = 0; j < VERTICAL; j++) {
             if((j == VERTICAL - 1) || (i == 0) || (i == HORIZONTAL - 1)) {
                 board[i][j] = BLOCKED;
+                printf("blocked cells board[%d][%d]\n", i, j);
             } else {
                 board[i][j] = EMPTY;
             }
@@ -20,6 +20,96 @@ void init_board() {
             }
         }
     }
+}
+
+void draw_board() {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    if(!game_over) {
+        Vector2 pos;
+        pos.x = window_width / 2 - (HORIZONTAL * SQUARE_SIZE / 2) - 50;
+        pos.y = window_height / 2 - ((VERTICAL - 1) * SQUARE_SIZE / 2) + SQUARE_SIZE * 2; // idk wtf is this
+        pos.y -= 50;
+
+        int controller = pos.x;
+        for (int j = 0; j < VERTICAL; j++) {
+                for (int i = 0; i < HORIZONTAL; i++) {
+                    // Draw each square of the grid
+                    if (board[i][j] == EMPTY) {
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    } else if (board[i][j] == ZERO_FULL) {
+                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    } else if(board[i][j] == ONE_FULL) {
+                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );                        
+                        pos.x += SQUARE_SIZE;
+                    } else if (board[i][j] == ZERO) {
+                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    } else if(board[i][j] == ONE) {
+                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    } else if (board[i][j] == BLOCKED) {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, DARKGRAY);
+                        pos.x += SQUARE_SIZE;
+                    } else if (board[i][j] == FADING) {
+                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, fading_color);
+                        pos.x += SQUARE_SIZE;
+                    }
+                }
+
+                pos.x = controller;
+                pos.y += SQUARE_SIZE;
+            }
+
+            // Draw incoming piece
+            pos.x = 500;
+            pos.y = 45;
+
+            int controler = pos.x;
+
+            for (int j = 0; j < 2; j++) {
+                for (int i = 0; i < 2; i++) {
+                    if (next_two_bit[i][j] == EMPTY) {
+                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
+                        pos.x += SQUARE_SIZE;
+                    } else if (next_two_bit[i][j] == ZERO) {
+                        // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, GRAY);
+                        pos.x += SQUARE_SIZE;
+                    } else if(next_two_bit[i][j] == ONE) {
+                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, GRAY);
+                        pos.x += SQUARE_SIZE;
+                    }
+                }
+                pos.x = controler;
+                pos.y += SQUARE_SIZE;
+            }
+
+            DrawText("incoming bit", pos.x, pos.y, 10, GRAY);
+
+            if (pausing) {
+                DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
+            }
+    } else {
+        DrawText("enter", GetScreenWidth()/2 - MeasureText("enter", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+    }
+    EndDrawing();
 }
 
 void update_board() {
@@ -108,99 +198,13 @@ void update_board() {
     }
 }
 
-void draw_board() {
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    if(!game_over) {
-        Vector2 pos;
-        pos.x = window_width/2 - (HORIZONTAL*SQUARE_SIZE/2) - 50;
-        pos.y = window_height/2 - ((VERTICAL - 1)*SQUARE_SIZE/2) + SQUARE_SIZE*2; // idk wtf is this
-        pos.y -= 50;
-
-        int controller = pos.x;
-        for (int j = 0; j < VERTICAL; j++) {
-                for (int i = 0; i < HORIZONTAL; i++) {
-                    // Draw each square of the grid
-                    if (board[i][j] == EMPTY) {
-                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
-                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
-                        DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
-                        DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
-                        pos.x += SQUARE_SIZE;
-                    } else if (board[i][j] == ZERO_FULL) {
-                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
-                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
-                        pos.x += SQUARE_SIZE;
-                    } else if(board[i][j] == ONE_FULL) {
-                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
-                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
-                        pos.x += SQUARE_SIZE;
-                    } else if (board[i][j] == ZERO) {
-                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
-                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
-                        pos.x += SQUARE_SIZE;
-                    } else if(board[i][j] == ONE) {
-                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, DARKGRAY);
-                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
-                        pos.x += SQUARE_SIZE;
-                    } else if (board[i][j] == BLOCKED) {
-                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
-                        pos.x += SQUARE_SIZE;
-                    } else if (board[i][j] == FADING) {
-                        DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, fading_color);
-                        pos.x += SQUARE_SIZE;
-                    }
-                }
-
-                pos.x = controller;
-                pos.y += SQUARE_SIZE;
-            }
-
-            // Draw incoming piece
-            pos.x = 500;
-            pos.y = 45;
-
-            int controler = pos.x;
-
-            for (int j = 0; j < 2; j++) {
-                for (int i = 0; i < 2; i++) {
-                    if (next_two_bit[i][j] == EMPTY) {
-                        DrawLine(pos.x, pos.y, pos.x + SQUARE_SIZE, pos.y, LIGHTGRAY );
-                        DrawLine(pos.x, pos.y, pos.x, pos.y + SQUARE_SIZE, LIGHTGRAY );
-                        DrawLine(pos.x + SQUARE_SIZE, pos.y, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
-                        DrawLine(pos.x, pos.y + SQUARE_SIZE, pos.x + SQUARE_SIZE, pos.y + SQUARE_SIZE, LIGHTGRAY );
-                        pos.x += SQUARE_SIZE;
-                    } else if (next_two_bit[i][j] == ZERO) {
-                        // DrawRectangle(pos.x, pos.y, SQUARE_SIZE, SQUARE_SIZE, GRAY);
-                        DrawText("0", pos.x + BIT_OFFSET, pos.y, 20, GRAY);
-                        pos.x += SQUARE_SIZE;
-                    } else if(next_two_bit[i][j] == ONE) {
-                        DrawText("1", pos.x + BIT_OFFSET, pos.y, 20, GRAY);
-                        pos.x += SQUARE_SIZE;
-                    }
-                }
-                pos.x = controler;
-                pos.y += SQUARE_SIZE;
-            }
-
-            DrawText("incoming bit", pos.x, pos.y, 10, GRAY);
-
-            if (pausing) {
-                DrawText("game stoped", window_width/2 - MeasureText("game stoped", 40)/2, window_height/2 - 40, 40, GRAY);
-            }
-    } else {
-        DrawText("enter", GetScreenWidth()/2 - MeasureText("enter", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
-    }
-    EndDrawing();
-}
-
 void update_and_draw() {
     update_board();
     draw_board();
 }
 
 bool create_bit() {
-    bitX = (int)((HORIZONTAL - 3)/2);
+    bitX = (int)((HORIZONTAL - 4)/2);
     bitY = 0;
 
     if(begin) {
@@ -286,9 +290,10 @@ bool bit_lateral_move() {
         for(int j = VERTICAL - 2; j >= 0; j--) {
             for(int i = 1; i < HORIZONTAL - 1; i++)  {
                 if(board[i][j] == ZERO || board[i][j] == ONE) {
-                    if((i - 1 == 0) || (board[i - 1][j] == ZERO_FULL) || (board[i - 1][j] == ONE_FULL)) {
-                        printf("collison: %d\n", i);
+                    if(board[i - 1][j] == BLOCKED) {
                         collison = true;
+                        printf("board[%d][%d]\n", i - 1, j);
+                        printf("collison: %d\n", i - 1);
                     }
                 }
             }
@@ -297,9 +302,12 @@ bool bit_lateral_move() {
         if(!collison) {
             for(int j = VERTICAL - 2; j >= 0; j--) {
                 for(int i = 1; i < HORIZONTAL - 1; i++) {
-                    if(board[i][j] == ZERO || board[i][j] == ONE) {
-                        board[i - 1][j] = board[i][j];
+                    if(board[i][j] == ZERO) {
+                        board[i - 1][j] = ZERO;
                         board[i][j] = EMPTY;                
+                    } else if(board[i][j] == ONE) {
+                        board[i - 1][j] = ONE;
+                        board[i][j] = EMPTY;
                     }
                 }
             }
@@ -310,9 +318,10 @@ bool bit_lateral_move() {
         for(int j = VERTICAL - 2; j >= 0; j--) {
             for(int i = 1; i < HORIZONTAL - 1; i++)  {
                 if(board[i][j] == ZERO || board[i][j] == ONE) {
-                    if((i + 1 == HORIZONTAL - 2) || (board[i + 1][j] == ZERO_FULL) || (board[i + 1][j] == ONE_FULL) || (board[i + 1][j] == BLOCKED)) {
-                        printf("collison: %d\n", i + 1);
+                    if(board[i + 1][j] == BLOCKED) {
                         collison = true;
+                        printf("board[%d][%d]\n", i + 1, j);
+                        printf("collison: %d\n", i + 1);
                     }
                 }
             }
@@ -321,8 +330,11 @@ bool bit_lateral_move() {
         if(!collison) {
             for(int j = VERTICAL - 2; j >= 0; j--) {
                 for(int i = HORIZONTAL - 1; i >= 1; i--) {
-                    if(board[i][j] == ZERO || board[i][j] == ONE) {
-                        board[i + 1][j] = board[i][j];
+                    if(board[i][j] == ZERO) {
+                        board[i + 1][j] = ZERO;
+                        board[i][j] = EMPTY;
+                    } else if(board[i][j] == ONE) {
+                        board[i + 1][j] = ONE;
                         board[i][j] = EMPTY;
                     }
                 }
@@ -347,9 +359,29 @@ void check_is_collision(bool *is_bit_collision) {
     }
 }
 
-
 void check_complete_line(bool *bit_to_delete) {
-    
+    for(int j = VERTICAL - 2; j >= 0; j--) {
+        int zero_counter = 0;
+        int one_counter = 0;
+        for(int i = 1; i < HORIZONTAL - 1; i++) {
+            if(board[i][j] == ZERO_FULL) {
+                zero_counter++;
+            } else if(board[i][j] == ONE_FULL) {
+                one_counter++;
+            }
+        }
+        if(zero_counter == HORIZONTAL - 2) {
+            for(int i = 1; i < HORIZONTAL - 1; i++) {
+                board[i][j] = FADING;
+            }
+            *bit_to_delete = true;
+        } else if(one_counter == HORIZONTAL - 2) {
+            for(int i = 1; i < HORIZONTAL - 1; i++) {
+                board[i][j] = FADING;
+            }
+            *bit_to_delete = true;
+        }
+    }
 }
 
 int delete_line() {

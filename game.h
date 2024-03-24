@@ -11,13 +11,13 @@
 #define GAME_FPS 60
 
 #define SQUARE_SIZE 20
-#define HORIZONTAL 11
+#define HORIZONTAL 12
 #define VERTICAL 20
 #define LATERAL_MOVE_SPEED 10
 #define TURN_SPEED 12
 #define FAST_FALLING_AWAIT_SPEED 30
 #define FADING_TIME 10
-#define VIRUS_NUM 30
+#define VIRUS_NUM 3
 #define BIT_OFFSET 25
 
 // globals
